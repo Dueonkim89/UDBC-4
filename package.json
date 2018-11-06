@@ -1,0 +1,21 @@
+{
+  "name": "udbc-2",
+  "version": "1.0.0",
+  "description": "Udacity Blockchain Second Project",
+  "main": "levelSandbox.js",
+  "scripts": {
+    "server": "nodemon app.js"
+  },
+  "keywords": [
+    "blockchain"
+  ],
+  "author": "Dkim",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "crypto-js": "^3.1.9-1",
+    "express": "^4.16.4",
+    "level": "^4.0.0",
+    "nodemon": "^1.18.5"
+  }
+}
