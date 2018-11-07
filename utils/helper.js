@@ -1,26 +1,37 @@
-//to store the wallets that need to be validated.
-const memPool = [];
+//to store the wallets that need to be validated. will contain mutable data
+let memPool = [];
 
-//function to create or update the validation object.
-function createValidationObject(address) {
+//function to check if the validation object exists.
+function checkValidation(address) {
 	let previousRequest = memPool.filter(request => request.address === address);
 	//if previousRequest exists, find new validation window.
 	if (previousRequest.length) {
-		console.log('to be built');
-		//calculateNewValidationWindow(address);
-		//spread syntax or concat the 2 arrays together that will filter and
-		//not filter the prevRequest
-	// else, send a new validation request
+		let valRequest = calculateNewValidationWindow(previousRequest[0]);
+		//filter and push new object.
+		memPool = memPool.filter(request => request.address !== address);
+		memPool.push(valRequest);
+		console.log(memPool);
+		//return the valRequest
+		return valRequest;
+	// else, create a new validation request
 	} else {
-		//create new validation request
 		return createNewValidationRequest(address);
 	}
 }
 
 // function to recalculate the validation window
-function calculateNewValidationWindow(address) {
+function calculateNewValidationWindow(request) {
 	//calculate new available validation time.
-	console.log('to be built');
+	const timeAtRequest = parseInt(request.requestTimeStamp);
+	const expirationTime = timeAtRequest + 300000;
+	//if 5 min validation window is over. create new validation request
+	if (new Date().getTime() >= expirationTime) {
+		return createNewValidationRequest(request.address);
+	// else create new 	validationWindow
+	} else {
+		request.validationWindow = `${(expirationTime - new Date().getTime()) /1000} seconds`;
+		return request;
+	}
 }
 
 // create new validation request.
@@ -35,5 +46,5 @@ function createNewValidationRequest(address) {
 }
 
 module.exports = {
-	createValidationObject
+	checkValidation
 }

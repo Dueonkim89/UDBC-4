@@ -6,7 +6,7 @@ const { Blockchain } = require('./simpleChain');
 const { Block } = require('./simpleBlock');
 
 //import helper functions
-const { createValidationObject } = require('./utils/helper');
+const { checkValidation } = require('./utils/helper');
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -39,7 +39,7 @@ app.post("/requestValidation", (req,res) => {
 		res.status(404).send('Please provide a blockchain identity');
 	} else {
 		// invoke helper function
-		const valObject = createValidationObject(address);
+		const valObject = checkValidation(address);
 		res.send(valObject);
 	}
 });
