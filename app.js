@@ -1,8 +1,12 @@
 const express = require("express");
 const bodyParser = require('body-parser');
 
+//import BlockChain and Block class
 const { Blockchain } = require('./simpleChain');
 const { Block } = require('./simpleBlock');
+
+//import helper functions
+const { createValidationObject } = require('./utils/helper');
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -14,7 +18,7 @@ app.get("/block/:height", (req, res) => {
 	const height = req.params.height;
 	newBlockChain.getBlock(height).then( block => {	
 		res.send(block);
-	}).catch(error => res.status(400).send(error));				
+	}).catch(error => res.status(400).send(error));		
 });
 
 app.post("/block", (req,res) => {
@@ -25,6 +29,18 @@ app.post("/block", (req,res) => {
 		newBlockChain.addBlock(new Block(blockData)).then(block => {
 			res.send(block);
 		}).catch(error => res.status(400).send(error));	
+	}
+});
+
+app.post("/requestValidation", (req,res) => {
+	const address = req.body.address;
+	
+	if (!address) {
+		res.status(404).send('Please provide a blockchain identity');
+	} else {
+		// invoke helper function
+		const valObject = createValidationObject(address);
+		res.send(valObject);
 	}
 });
 
