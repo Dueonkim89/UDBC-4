@@ -33,8 +33,7 @@ app.post("/block", (req,res) => {
 });
 
 app.post("/requestValidation", (req,res) => {
-	const address = req.body.address;
-	
+	const address = req.body.address;	
 	if (!address) {
 		res.status(404).send('Please provide a blockchain identity');
 	} else {
@@ -42,6 +41,12 @@ app.post("/requestValidation", (req,res) => {
 		const valObject = checkValidation(address);
 		res.send(valObject);
 	}
+});
+
+app.post("/message-signature/validate", (req,res) => {
+	const {address, signature} = req.body;
+	console.log(address, signature);
+	res.send('working on this route');
 });
 
 app.listen(port, () => {

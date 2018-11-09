@@ -45,6 +45,11 @@ function createNewValidationRequest(address) {
 	return newRequest;
 }
 
+//function to validate user's signature
+function validateSignature(address, signature) {
+	console.log(address, signature);
+}
+
 module.exports = {
 	checkValidation
 }
