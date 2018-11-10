@@ -6,7 +6,7 @@ const { Blockchain } = require('./simpleChain');
 const { Block } = require('./simpleBlock');
 
 //import helper functions
-const { checkValidation } = require('./utils/helper');
+const { checkValidation, validateSignature, createResponseForValidSig } = require('./utils/helper');
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -45,8 +45,16 @@ app.post("/requestValidation", (req,res) => {
 
 app.post("/message-signature/validate", (req,res) => {
 	const {address, signature} = req.body;
-	console.log(address, signature);
-	res.send('working on this route');
+	try {
+		if (validateSignature(address, signature)) {
+			res.send('valid sig');
+			//createResponseForValidSig(address);
+		} else {
+			res.status(400).send('Your signature is invalid');
+		}
+	} catch(e) {
+		res.status(400).send('Error trying to valid your signature');
+	}						
 });
 
 app.listen(port, () => {
