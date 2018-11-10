@@ -1,3 +1,7 @@
+// bitcoin libraries
+const bitcoin = require('bitcoinjs-lib');
+const bitcoinMessage = require('bitcoinjs-message');
+
 //to store the wallets that need to be validated. will contain mutable data
 let memPool = [];
 
@@ -45,11 +49,33 @@ function createNewValidationRequest(address) {
 	return newRequest;
 }
 
-//function to validate user's signature
+//function to check if user's signature is valid
 function validateSignature(address, signature) {
-	console.log(address, signature);
+	// filter and map to get the message.
+	const message = memPool.filter(request => request.address === address).map(request => request.message);
+	//send boolean value of bitcoinMessage.verify
+	return bitcoinMessage.verify(message[0], address, signature);
+}
+
+//function to send JSON response for /message-signature/validate
+function createResponseForValidSig(address) {
+	//to be worked on...
+	// calculateNewValidationWindow(request)
+	/* The Format
+	{
+	  "registerStar": true,
+	  "status": {
+		"address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
+		"requestTimeStamp": "1532296090",
+		"message": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ:1532296090:starRegistry",
+		"validationWindow": 193,
+		"messageSignature": "valid"
+	  }
+	}	*/	
 }
 
 module.exports = {
-	checkValidation
+	checkValidation,
+	validateSignature,
+	createResponseForValidSig
 }
