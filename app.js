@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const { Blockchain } = require('./simpleChain');
 const { Block } = require('./simpleBlock');
 
-//import helper functions
+//import helper functions 
 const { checkValidation, validateSignature, createResponseForValidSig } = require('./utils/helper');
 
 const app = express();
@@ -47,14 +47,14 @@ app.post("/message-signature/validate", (req,res) => {
 	const {address, signature} = req.body;
 	try {
 		if (validateSignature(address, signature)) {
-			res.send('valid sig');
-			//createResponseForValidSig(address);
+			const response = createResponseForValidSig(address);
+			res.send(response);
 		} else {
-			res.status(400).send('Your signature is invalid');
+			res.status(400).send('Your signature is invalid. Please make sure you have the correct message');
 		}
 	} catch(e) {
 		res.status(400).send('Error trying to valid your signature');
-	}						
+	}		
 });
 
 app.listen(port, () => {
