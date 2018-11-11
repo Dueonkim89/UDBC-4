@@ -51,6 +51,8 @@ function createNewValidationRequest(address) {
 
 //function to check if user's signature is valid
 function validateSignature(address, signature) {
+	//make sure 5 min window is followed!
+	checkValidation(address)
 	// filter and map to get the message.
 	const message = memPool.filter(request => request.address === address).map(request => request.message);
 	//send boolean value of bitcoinMessage.verify
@@ -58,20 +60,21 @@ function validateSignature(address, signature) {
 }
 
 //function to send JSON response for /message-signature/validate
-function createResponseForValidSig(address) {
-	//to be worked on...
-	// calculateNewValidationWindow(request)
-	/* The Format
-	{
+//scoping issue with name of argument, changing it to addy!
+function createResponseForValidSig(addy) {
+	const requestInfo = checkValidation(addy);
+	const {address, requestTimeStamp, message, validationWindow} = requestInfo;	
+	let response =  {
 	  "registerStar": true,
 	  "status": {
-		"address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
-		"requestTimeStamp": "1532296090",
-		"message": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ:1532296090:starRegistry",
-		"validationWindow": 193,
+		address,
+		requestTimeStamp,
+		message,
+		validationWindow,
 		"messageSignature": "valid"
 	  }
-	}	*/	
+	};
+	return response;
 }
 
 module.exports = {
