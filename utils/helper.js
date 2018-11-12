@@ -6,8 +6,12 @@ const bitcoinMessage = require('bitcoinjs-message');
 let memPool = [];
 
 //function to check if the validation object exists.
-function checkValidation(address) {
+function checkValidation(address, validated=null) {
 	let previousRequest = memPool.filter(request => request.address === address);
+	//if validated. just send the request.
+	if (validated) {
+		return previousRequest[0];
+	}
 	//if previousRequest exists, find new validation window.
 	if (previousRequest.length) {
 		let valRequest = calculateNewValidationWindow(previousRequest[0]);
@@ -62,7 +66,7 @@ function validateSignature(address, signature) {
 //function to send JSON response for /message-signature/validate
 //scoping issue with name of argument, changing it to addy!
 function createResponseForValidSig(addy) {
-	const requestInfo = checkValidation(addy);
+	const requestInfo = checkValidation(addy, 'validated');
 	const {address, requestTimeStamp, message, validationWindow} = requestInfo;	
 	let response =  {
 	  "registerStar": true,
