@@ -6,7 +6,10 @@ const { Blockchain } = require('./simpleChain');
 const { Block } = require('./simpleBlock');
 
 //import helper functions 
-const { checkValidation, validateSignature, createResponseForValidSig } = require('./utils/helper');
+const { checkValidation, validateSignature, createResponseForValidSig, isASCII, checkBytesOfStory } = require('./utils/helper');
+// import error messages
+const { missingInfoForStarPosting, missingBlockBody, invalidSignature } = require('./utils/messages');
+
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -22,14 +25,25 @@ app.get("/block/:height", (req, res) => {
 });
 
 app.post("/block", (req,res) => {
-	const blockData = req.body.data;
+	const { address, star } = req.body;
+	
+	if (!address || !star) {
+		res.status(400).send(missingBlockBody);
+	}
+	const { story, dec, ra } = star;
+	
+	if (!story || !dec || !ra) {
+		res.status(400).send(missingInfoForStarPosting);
+	}
+	
+	/*const blockData = req.body.data;
 	if (!blockData) {
 		res.status(404).send('Please provide a block body');
 	} else {
 		newBlockChain.addBlock(new Block(blockData)).then(block => {
 			res.send(block);
 		}).catch(error => res.status(400).send(error));	
-	}
+	}*/
 });
 
 app.post("/requestValidation", (req,res) => {
@@ -50,7 +64,7 @@ app.post("/message-signature/validate", (req,res) => {
 			const response = createResponseForValidSig(address);
 			res.send(response);
 		} else {
-			res.status(400).send('Your signature is invalid. Please make sure you have the correct message');
+			res.status(400).send(invalidSignature);
 		}
 	} catch(e) {
 		res.status(400).send('Error trying to valid your signature');
