@@ -4,7 +4,8 @@ const bitcoinMessage = require('bitcoinjs-message');
 
 class memPool {
 	constructor(data){
-		this.memPool = []
+		this.memPool = [],
+		this.validMemPool = []
     }
 	
 	//check if the validation object exists.
@@ -36,13 +37,17 @@ class memPool {
 		const timeAtRequest = parseInt(request.requestTimeStamp);
 		const expirationTime = timeAtRequest + timeLimit;
 		//if 5 min validation window is over. create new validation request
-		if (new Date().getTime() >= expirationTime) {
+		if (timeLimit === 300000 && new Date().getTime() >= expirationTime) {
 			return this.createNewValidationRequest(request.address);
-		// else create new 	validationWindow
+		// else if 30 min window is over, set messageSig to false.
+		} else if (timeLimit === 1800000 && new Date().getTime() >= expirationTime) {
+			request.messageSignature = false;
+			return request;
+		// else create new 	validationWindow	
 		} else {
 			request.validationWindow = `${(expirationTime - new Date().getTime()) /1000}`;
 			return request;
-		}
+		}					
 	}	
 	
 	// create new validation request.
@@ -69,7 +74,62 @@ class memPool {
 		return bitcoinMessage.verify(message[0], address, signature);
 	}
 
-	
+	//function to send JSON response for /message-signature/validate
+	//scoping issue with name of argument, changing it to addy!
+	createResponseForValidSig(addy) {
+		//check if already validated, if so send new updated validation window
+		if (this.alreadyValidated(addy)) {
+			// grab request
+			//destruct the status
+			// send it into calculateNewValidationWindow with proper time 
+			
+			// recreate validation request
+			//invoke updateValidMemPool(address)
+			//push it into validMemPool
+			//return updated request
+			
+		} else {
+			const requestInfo = this.checkValidation(addy, 'validated');
+			const {address, requestTimeStamp, message, validationWindow} = requestInfo;	
+			const newValWindow = 1800 - validationWindow;
+			let response =  {
+			  "registerStar": true,
+			  "status": {
+				address,
+				requestTimeStamp,
+				message,
+				validationWindow: newValWindow,
+				"messageSignature": true
+			  }
+			};
+			//mutate validMemPool to remove this request with same address. Only one allowed per 30 minutes.
+			this.updateValidMemPool(address);
+			this.validMemPool.push(response);
+			return response;			
+		}
+	}
+
+	//check if specific address already is validated within validMemPool
+	alreadyValidated(addy) {
+		let exist = this.validMemPool.filter(request => request.status.address === addy);
+		return exist.length ? true : false;
+	}
+
+	//check if 30 min window is over for valid request within validMemPool
+	checkIfVRequestExpired(addy) {
+		//grab request from validMemPool
+		let currentRequest = this.validMemPool.filter(request => request.status.address === addy);
+		// destruct status then invoke calculateNewValidationWindow(request, timeLimit)
+		const { status } = currentRequest[0];
+		const updatedVRequest = this.calculateNewValidationWindow(status, 1800000);
+		// if messageSig is falsey.. we know time has expired
+		return !updatedVRequest.messageSignature ? true : false;
+	}
+
+	//method to mutate validMemPool and update with most recent valid request
+	updateValidMemPool(address) {
+		this.validMemPool = this.validMemPool.filter(request => request.status.address !== address);
+	}	
 }
 
 module.exports = {
