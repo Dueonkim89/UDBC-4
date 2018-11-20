@@ -18,6 +18,8 @@ const invalidSignature = 'Your signature is invalid. Please make sure you have t
 const validRequestExpired = `Your 30 min window to submit star data has expired. Please obtain a new validation request.`;
 const requestAlreadyValidated = `Your request is already validated. Please submit a star data within your validation window`;
 
+
+
 module.exports = {
 	missingInfoForStarPosting,
 	missingBlockBody,
