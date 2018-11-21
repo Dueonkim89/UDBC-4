@@ -59,6 +59,11 @@ class memPool {
 
 	//check if user's signature is valid
 	validateSignature(address, signature) {
+		// if already in vMemPool check message in vMemPool
+		if (this.alreadyValidated(address)) {
+			const message = this.validMemPool.filter(request => request.status.address === address).map(request => request.status.message);
+			return bitcoinMessage.verify(message[0], address, signature);
+		}
 		//make sure 5 min window is followed!
 		this.checkValidation(address)
 		// filter and map to get the message.
@@ -72,19 +77,18 @@ class memPool {
 	createResponseForValidSig(addy) {
 		//check if already validated, if so send new updated validation window
 		if (this.alreadyValidated(addy)) {
-			// grab request
-			//destruct the status
-			// send it into calculateNewValidationWindow with proper time 
-			
-			// recreate validation request
-			//invoke updateValidMemPool(address)
-			//push it into validMemPool
+			const status = this.getRequestFromVMemPool(addy);
+			const request = {
+				"registerStar": true,
+				status
+			};
+			this.updateVMemPool(addy, request);
 			//return updated request
-			
+			return request;						
 		} else {
 			const requestInfo = this.checkValidation(addy, 'validated');
 			const {address, requestTimeStamp, message, validationWindow} = requestInfo;	
-			const newValWindow = 1800 - validationWindow;
+			const newValWindow = 1800 - (300 - validationWindow);
 			let response =  {
 			  "registerStar": true,
 			  "status": {
@@ -110,15 +114,21 @@ class memPool {
 	//check if 30 min window is over for valid request within validMemPool
 	checkIfVRequestExpired(addy) {
 		//get the request
-		const request = this.getRequestFromVMemPool(addy);
-		// if messageSig is falsey.. we know time has expired
-		return !request.messageSignature ? true : false;
+		const request = this.getRequestFromVMemPool(addy);	
+		if (!request.messageSignature) {
+			//remove request from vMemPool
+			this.validMemPool = this.validMemPool.filter(request => request.status.address !== address);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	//method to mutate validMemPool and update with most recent valid request
 	updateVMemPool(address, request) {
 		this.validMemPool = this.validMemPool.filter(request => request.status.address !== address);
 		this.validMemPool.push(request);
+		console.log(this.validMemPool);
 	}
 	
 	//method to mutate MemPool and update with most recent request object
@@ -138,6 +148,11 @@ class memPool {
 		const { status } = currentRequest[0];
 		const updatedVRequest = this.calculateNewValidationWindow(status, 1800000);		
 		return updatedVRequest;
+	}
+	
+	//method to get the specific request from MemPool.
+	getRequestFromMemPool(address) {
+		return this.memPool.filter(request => request.address === address);
 	}
 }
 
