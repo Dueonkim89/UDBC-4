@@ -18,11 +18,8 @@ class memPool {
 		//if previousRequest exists, find new validation window.
 		if (previousRequest.length) {
 			let valRequest = this.calculateNewValidationWindow(previousRequest[0], 300000);
-			//remove request within mempool that has the address
-			this.memPool = this.memPool.filter(request => request.address !== address);
-			//filter and push new object.
-			this.memPool.push(valRequest);			
-			console.log(this.memPool);
+			//update the memPool
+			this.updateMemPool(address, valRequest);
 			//return the valRequest
 			return valRequest;
 		// else, create a new validation request
@@ -56,11 +53,7 @@ class memPool {
 		const validationWindow = 300;
 		const message =`${address}:${requestTimeStamp}:starRegistry`;
 		let newRequest = {address, requestTimeStamp, message, validationWindow};
-		//remove request within mempool that has the address
-		this.memPool = this.memPool.filter(request => request.address !== address);
-		//filter and push new object.
-		this.memPool.push(newRequest);	
-		console.log(memPool);
+		this.updateMemPool(address, newRequest);	
 		return newRequest;
 	}	
 
@@ -103,8 +96,7 @@ class memPool {
 			  }
 			};
 			//mutate validMemPool to remove this request with same address. Only one allowed per 30 minutes.
-			this.updateValidMemPool(address);
-			this.validMemPool.push(response);
+			this.updateVMemPool(address, response);
 			return response;			
 		}
 	}
@@ -117,19 +109,36 @@ class memPool {
 
 	//check if 30 min window is over for valid request within validMemPool
 	checkIfVRequestExpired(addy) {
-		//grab request from validMemPool
-		let currentRequest = this.validMemPool.filter(request => request.status.address === addy);
-		// destruct status then invoke calculateNewValidationWindow(request, timeLimit)
-		const { status } = currentRequest[0];
-		const updatedVRequest = this.calculateNewValidationWindow(status, 1800000);
+		//get the request
+		const request = this.getRequestFromVMemPool(addy);
 		// if messageSig is falsey.. we know time has expired
-		return !updatedVRequest.messageSignature ? true : false;
+		return !request.messageSignature ? true : false;
 	}
 
 	//method to mutate validMemPool and update with most recent valid request
-	updateValidMemPool(address) {
+	updateVMemPool(address, request) {
 		this.validMemPool = this.validMemPool.filter(request => request.status.address !== address);
-	}	
+		this.validMemPool.push(request);
+	}
+	
+	//method to mutate MemPool and update with most recent request object
+	updateMemPool(address, request) {
+		//remove request within mempool that has the address
+		this.memPool = this.memPool.filter(request => request.address !== address);
+		//filter and push new object.
+		this.memPool.push(request);	
+		console.log(this.memPool);
+	}
+
+	//method to get the specific request from validMemPool with new time.
+	getRequestFromVMemPool(address) {
+		//grab request from validMemPool
+		let currentRequest = this.validMemPool.filter(request => request.status.address === address);
+		// destruct status then invoke calculateNewValidationWindow(request, timeLimit)
+		const { status } = currentRequest[0];
+		const updatedVRequest = this.calculateNewValidationWindow(status, 1800000);		
+		return updatedVRequest;
+	}
 }
 
 module.exports = {
