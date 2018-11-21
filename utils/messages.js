@@ -17,7 +17,17 @@ const storyIsTooLong = 'Star story can have a maximum length of 250 words or 500
 const invalidSignature = 'Your signature is invalid. Please make sure you have the correct message.';
 const validRequestExpired = `Your 30 min window to submit star data has expired. Please obtain a new validation request.`;
 const requestAlreadyValidated = `Your request is already validated. Please submit a star data within your validation window`;
+const missingValidationRequest = `Please submit a validation request at the url /requestValidation`;
 
+const missingAddyOrSig = `<pre>
+Please provide a blockchain identity and a signature in the body of your request.
+Example: 
+{
+	"address": "12345678910",
+	"signature": "My signature"
+}
+</pre>	
+`;
 
 
 module.exports = {
@@ -27,5 +37,7 @@ module.exports = {
 	invalidASCII,
 	storyIsTooLong,
 	validRequestExpired,
-	requestAlreadyValidated
+	requestAlreadyValidated,
+	missingValidationRequest,
+	missingAddyOrSig
 }
