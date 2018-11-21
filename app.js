@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require('body-parser');
 
-//import BlockChain, Block, memPool and validMemPool class
+//import BlockChain, Block and mempool class
 const { Blockchain } = require('./simpleChain');
 const { Block } = require('./simpleBlock');
 const { memPool } = require('./memPool');
@@ -11,7 +11,7 @@ const { memPool } = require('./memPool');
 const { isASCII, checkBytesOfStory } = require('./utils/helper');
 // import error messages
 const { missingInfoForStarPosting, missingBlockBody, invalidSignature, requestAlreadyValidated,
-validRequestExpired } = require('./utils/messages');
+validRequestExpired, missingValidationRequest, missingAddyOrSig } = require('./utils/messages');
 
 
 const app = express();
@@ -68,12 +68,20 @@ app.post("/requestValidation", (req,res) => {
 app.post("/message-signature/validate", (req,res) => {
 	const {address, signature} = req.body;
 	
+	if (!address || !signature) {
+		return res.status(404).send(missingAddyOrSig);
+	}
+	
+	if (!newMemPool.getRequestFromMemPool(address).length) {
+		return res.status(404).send(missingValidationRequest);
+	}
+	
 	try {
 		if (newMemPool.validateSignature(address, signature)) {
 			//if validRequest already exists in validMemPool and is expired
 			if (newMemPool.alreadyValidated(address) && newMemPool.checkIfVRequestExpired(address)) {
 				res.status(400).send(validRequestExpired);
-				//send valid request. The validation window must update everytime.
+				//else, send valid request. The validation window must update everytime.
 			} else {
 				const response = newMemPool.createResponseForValidSig(address);
 				res.send(response);			
