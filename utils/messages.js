@@ -18,6 +18,7 @@ const invalidSignature = 'Your signature is invalid. Please make sure you have t
 const validRequestExpired = `Your 30 min window to submit star data has expired. Please obtain a new validation request.`;
 const requestAlreadyValidated = `Your request is already validated. Please submit a star data within your validation window`;
 const missingValidationRequest = `Please submit a validation request at the url /requestValidation`;
+const notValidated = `Please validate your request with the correct signature before trying to submit a star.`;
 
 const missingAddyOrSig = `<pre>
 Please provide a blockchain identity and a signature in the body of your request.
@@ -39,5 +40,6 @@ module.exports = {
 	validRequestExpired,
 	requestAlreadyValidated,
 	missingValidationRequest,
-	missingAddyOrSig
+	missingAddyOrSig,
+	notValidated
 }

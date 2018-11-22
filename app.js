@@ -11,7 +11,8 @@ const { memPool } = require('./memPool');
 const { isASCII, checkBytesOfStory } = require('./utils/helper');
 // import error messages
 const { missingInfoForStarPosting, missingBlockBody, invalidSignature, requestAlreadyValidated,
-validRequestExpired, missingValidationRequest, missingAddyOrSig } = require('./utils/messages');
+validRequestExpired, missingValidationRequest, missingAddyOrSig, invalidASCII, storyIsTooLong, 
+notValidated } = require('./utils/messages');
 
 
 const app = express();
@@ -31,14 +32,37 @@ app.get("/block/:height", (req, res) => {
 app.post("/block", (req,res) => {
 	const { address, star } = req.body;
 	
+	//if address or star is missing in body of request
 	if (!address || !star) {
-		res.status(400).send(missingBlockBody);
+		return res.status(404).send(missingBlockBody);
 	}
+	
+	//check if request is in validMemPool
+	if (!newMemPool.alreadyValidated(address)) {
+		return res.status(404).send(notValidated);
+	}
+	
+	//check if valid request has expired 
+	if (newMemPool.checkIfVRequestExpired(address)) {
+		return res.status(400).send(validRequestExpired);
+	}
+
 	const { story, dec, ra } = star;
 	
+	//if stor, dec, or ra is missing in star object
 	if (!story || !dec || !ra) {
-		res.status(400).send(missingInfoForStarPosting);
+		return res.status(400).send(missingInfoForStarPosting);
 	}
+	
+	//if invalid ascii text
+	if (!isASCII(story)) {
+		return res.status(400).send(invalidASCII);
+	}
+	//make sure story isnt over 500 bytes.
+	if (!checkBytesOfStory(story)) {
+		return res.status(400).send(storyIsTooLong);
+	}
+	
 	
 	/*const blockData = req.body.data;
 	if (!blockData) {
@@ -52,11 +76,17 @@ app.post("/block", (req,res) => {
 
 app.post("/requestValidation", (req,res) => {
 	const address = req.body.address;	
-	//check if address is found in validated memPool. if so send message saying already validated.
+	//if address is missing
 	if (!address) {
 		return res.status(404).send('Please provide a blockchain identity');
 	} 
+	//if valid request has expired.
+	if (newMemPool.alreadyValidated(address) && newMemPool.checkIfVRequestExpired(address)) {
+		//reset the vMemPool
+		newMemPool.updateVMemPool(address);
+	}
 	
+	//if request has already been validated
 	if (newMemPool.alreadyValidated(address)) {
 		return res.status(400).send(requestAlreadyValidated);
 	}	
@@ -80,7 +110,7 @@ app.post("/message-signature/validate", (req,res) => {
 		if (newMemPool.validateSignature(address, signature)) {
 			//if validRequest already exists in validMemPool and is expired
 			if (newMemPool.alreadyValidated(address) && newMemPool.checkIfVRequestExpired(address)) {
-				res.status(400).send(validRequestExpired);
+				return res.status(400).send(validRequestExpired);
 				//else, send valid request. The validation window must update everytime.
 			} else {
 				const response = newMemPool.createResponseForValidSig(address);
@@ -93,6 +123,7 @@ app.post("/message-signature/validate", (req,res) => {
 		res.status(400).send('Error trying to valid your signature');
 	}	
 });
+
 
 app.listen(port, () => {
 	console.log(`listening on port ${port}`);
