@@ -1,3 +1,5 @@
+const hex2ascii = require('hex2ascii');
+
 //check if valid ASCII
 function isASCII(str) {
     return /^[\x00-\x7F]*$/.test(str);
@@ -12,6 +14,11 @@ function checkBytesOfStory(story) {
 	} else {
 		return buf.toString('hex');
 	}
+}
+
+function decodeStory(block) {
+	block.body.star.storyDecoded = hex2ascii(block.body.star.story);
+	return block;
 }
 
 
