@@ -37,7 +37,7 @@ class memPool {
 		if (timeLimit === 300000 && new Date().getTime() >= expirationTime) {
 			return this.createNewValidationRequest(request.address);
 		// else if 30 min window is over, set messageSig to false.
-		} else if (timeLimit === 1800000 && new Date().getTime() >= expirationTime) {
+		} else if (timeLimit === 360000 && new Date().getTime() >= expirationTime) {
 			request.messageSignature = false;
 			return request;
 		// else create new 	validationWindow	
@@ -77,18 +77,14 @@ class memPool {
 	createResponseForValidSig(addy) {
 		//check if already validated, if so send new updated validation window
 		if (this.alreadyValidated(addy)) {
-			const status = this.getRequestFromVMemPool(addy);
-			const request = {
-				"registerStar": true,
-				status
-			};
+			const request = this.getRequestFromVMemPool(addy);
 			this.updateVMemPool(addy, request);
 			//return updated request
 			return request;						
 		} else {
 			const requestInfo = this.checkValidation(addy, 'validated');
 			const {address, requestTimeStamp, message, validationWindow} = requestInfo;	
-			const newValWindow = 1800 - (300 - validationWindow);
+			const newValWindow = 360 - (300 - validationWindow);
 			let response =  {
 			  "registerStar": true,
 			  "status": {
@@ -115,19 +111,15 @@ class memPool {
 	checkIfVRequestExpired(addy) {
 		//get the request
 		const request = this.getRequestFromVMemPool(addy);	
-		if (!request.messageSignature) {
-			//remove request from vMemPool
-			this.validMemPool = this.validMemPool.filter(request => request.status.address !== address);
-			return true;
-		} else {
-			return false;
-		}
+		return !request.messageSignature ? true : false;
 	}
 
 	//method to mutate validMemPool and update with most recent valid request
 	updateVMemPool(address, request) {
 		this.validMemPool = this.validMemPool.filter(request => request.status.address !== address);
-		this.validMemPool.push(request);
+		if (request) {
+			this.validMemPool.push(request);
+		}	
 		console.log(this.validMemPool);
 	}
 	
@@ -144,16 +136,24 @@ class memPool {
 	getRequestFromVMemPool(address) {
 		//grab request from validMemPool
 		let currentRequest = this.validMemPool.filter(request => request.status.address === address);
-		// destruct status then invoke calculateNewValidationWindow(request, timeLimit)
-		const { status } = currentRequest[0];
-		const updatedVRequest = this.calculateNewValidationWindow(status, 1800000);		
-		return updatedVRequest;
+		// destruct status and registerStar then invoke calculateNewValidationWindow(request, timeLimit)
+		const { status, registerStar } = currentRequest[0];
+		const updatedStatus = this.calculateNewValidationWindow(status, 360000);		
+		return {registerStar, status: updatedStatus};
 	}
 	
 	//method to get the specific request from MemPool.
 	getRequestFromMemPool(address) {
 		return this.memPool.filter(request => request.address === address);
 	}
+	
+	//prevent multiple star posting within 30 mins
+	starPosted(address) {
+		const request = this.getRequestFromVMemPool(address);
+		request.registerStar = false;
+		this.updateVMemPool(address, request);
+	}
+	
 }
 
 module.exports = {
