@@ -111,7 +111,7 @@ class memPool {
 	checkIfVRequestExpired(addy) {
 		//get the request
 		const request = this.getRequestFromVMemPool(addy);	
-		return !request.messageSignature ? true : false;
+		return !request.status.messageSignature ? true : false;
 	}
 
 	//method to mutate validMemPool and update with most recent valid request

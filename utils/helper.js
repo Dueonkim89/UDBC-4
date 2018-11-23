@@ -25,5 +25,6 @@ function decodeStory(block) {
 
 module.exports = {
 	isASCII,
-	checkBytesOfStory
+	checkBytesOfStory,
+	decodeStory
 }

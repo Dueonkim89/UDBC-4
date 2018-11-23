@@ -8,11 +8,11 @@ const { memPool } = require('./memPool');
 
 
 //import helper functions 
-const { isASCII, checkBytesOfStory } = require('./utils/helper');
+const { isASCII, checkBytesOfStory, decodeStory } = require('./utils/helper');
 // import error messages
-const { missingInfoForStarPosting, missingBlockBody, invalidSignature, requestAlreadyValidated,
-validRequestExpired, missingValidationRequest, missingAddyOrSig, invalidASCII, storyIsTooLong, 
-notValidated } = require('./utils/messages');
+const { missingInfoForStarPosting, missingBlockBody, invalidSignature, requestAlreadyValidated, validRequestExpired, 
+missingValidationRequest, missingAddyOrSig, invalidASCII, storyIsTooLong, notValidated, starAlreadyPosted 
+} = require('./utils/messages');
 
 
 const app = express();
@@ -37,7 +37,7 @@ app.post("/block", (req,res) => {
 		return res.status(404).send(missingBlockBody);
 	}
 	
-	//check if request is in validMemPool
+	//check if request is not in validMemPool
 	if (!newMemPool.alreadyValidated(address)) {
 		return res.status(404).send(notValidated);
 	}
@@ -46,7 +46,13 @@ app.post("/block", (req,res) => {
 	if (newMemPool.checkIfVRequestExpired(address)) {
 		return res.status(400).send(validRequestExpired);
 	}
-
+	
+	const request = newMemPool.getRequestFromVMemPool(address);
+	//check is user already posted a star
+	if (!request.registerStar) {
+		return res.status(401).send(starAlreadyPosted(request.status.validationWindow));
+	}
+	
 	const { story, dec, ra } = star;
 	
 	//if stor, dec, or ra is missing in star object
@@ -63,15 +69,22 @@ app.post("/block", (req,res) => {
 		return res.status(400).send(storyIsTooLong);
 	}
 	
-	
-	/*const blockData = req.body.data;
-	if (!blockData) {
-		res.status(404).send('Please provide a block body');
-	} else {
-		newBlockChain.addBlock(new Block(blockData)).then(block => {
-			res.send(block);
-		}).catch(error => res.status(400).send(error));	
-	}*/
+	const body = {
+		address, 
+		star: {
+			ra,
+			dec,
+			story: Buffer.from(story).toString('hex')
+		}
+	};
+	//add block
+	newBlockChain.addBlock(new Block(body)).then(block => {
+		//make sure to prevent star from being posted again within 30 min window.		
+		newMemPool.starPosted(address);
+		//invoke helper function to add storyDecoded property.
+		let data = decodeStory(block);		
+		res.send(data);		
+	}).catch(error => res.status(400).send(error));	
 });
 
 app.post("/requestValidation", (req,res) => {
