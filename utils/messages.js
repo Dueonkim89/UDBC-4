@@ -20,6 +20,11 @@ const requestAlreadyValidated = `Your request is already validated. Please submi
 const missingValidationRequest = `Please submit a validation request at the url /requestValidation`;
 const notValidated = `Please validate your request with the correct signature before trying to submit a star.`;
 
+const starAlreadyPosted = function(timeWindow) {
+	return `You have already posted a star object with that wallet address. Please wait ${timeWindow} seconds or use another
+	wallet address`;
+}
+
 const missingAddyOrSig = `<pre>
 Please provide a blockchain identity and a signature in the body of your request.
 Example: 
@@ -41,5 +46,6 @@ module.exports = {
 	requestAlreadyValidated,
 	missingValidationRequest,
 	missingAddyOrSig,
-	notValidated
+	notValidated,
+	starAlreadyPosted
 }
