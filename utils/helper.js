@@ -17,11 +17,24 @@ function checkBytesOfStory(story) {
 }
 
 function decodeStory(block) {
+	//if passed argument is an array.
+	if (Array.isArray(block)) {
+		//map through each iteration and add a storyDecoded property. Keep it simple with SPREAD SYNTAX.
+		let mutatedArray = block.map(x => {
+			return {...x, 
+					body:{...x.body, 
+						star: {...x.body.star, storyDecoded: hex2ascii(x.body.star.story)}				
+					}			
+				} 
+		});		
+		return mutatedArray;
+	}
+	//if not an array
 	block.body.star.storyDecoded = hex2ascii(block.body.star.story);
 	return block;
 }
 
-
+x.body.star.storyDecoded = hex2ascii(block.body.star.story));
 
 module.exports = {
 	isASCII,
