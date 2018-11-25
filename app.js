@@ -22,7 +22,7 @@ const newMemPool = new memPool();
 
 app.use(bodyParser.json());
 
-//get by block height
+//get block by block height
 app.get("/block/:height", (req, res) => {
 	const height = req.params.height;
 	
@@ -33,24 +33,27 @@ app.get("/block/:height", (req, res) => {
 	}).catch(error => res.status(400).send(error));		
 });
 
-//Get by address
+//Get block by address
 app.get("/stars/address/:address", (req, res) => {
 	const address = req.params.address;	
-	newBlockChain.getBlockByAddress(address).then( block => {			
-		//put each block through the helper decodeStory function
-		const data = decodeStory(block)
+	newBlockChain.getBlockByAddressOrHash('address', address).then( block => {			
+		//put each block in array through the helper decodeStory function
+		const data = decodeStory(block);
 		res.send(data);
 	}).catch(error => res.status(400).send(error));	;			
 });
 
-//get by block hash
+//get block by block hash
 app.get("/stars/hash/:hash", (req, res) => {
 	const hash = req.params.hash;
-	newBlockChain.getBlockByHash(hash).then( block => {
-	
+	newBlockChain.getBlockByAddressOrHash('hash', hash).then( block => {
+		//put the block through the helper decodeStory function
+		const data = decodeStory(block[0]);
+		res.send(data);	
 	}).catch(error => res.status(400).send(error));	
-});	
+});
 
+//post a block
 app.post("/block", (req,res) => {
 	const { address, star } = req.body;
 	
