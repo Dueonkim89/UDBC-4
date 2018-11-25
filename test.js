@@ -3,6 +3,7 @@ const { Blockchain } = require('./simpleChain');
 const { Block } = require('./simpleBlock');
 const hex2ascii = require('hex2ascii');
 const { isASCII, checkBytesOfStory } = require('./utils/helper');
+const { testData } = require('./testData');
 
 //update data for future testing purposes
 function modifyData(key, value) {
@@ -19,10 +20,10 @@ function modifyData(key, value) {
 //create new instance of blockchain
 const myBlockChain = new Blockchain();
 
-/*
+
 (function theLoop (i) {
     setTimeout(function () {
-        let blockTest = new Block("Test Block - " + (i + 1));
+        let blockTest = new Block(testData[i]);
         myBlockChain.addBlock(blockTest);
         i++;
         if (i < 10) theLoop(i);
@@ -31,6 +32,7 @@ const myBlockChain = new Blockchain();
 
 //console.log(hex2ascii('6C 6F 6C 20 66 75 63 6B 20 79 6F 75'));
 
+/*
 const story = `fdsfdsfdsfdsfdsdfdsfdsfds8787vcx978xc798vxcihjvihxcicxv7cx76hijkjsdf76dhsdfjipsdiuewruinldfdsfdsfdsfdsff
 mxcvhjxchodsjkoffdsfdsfdsfdsfs89uf89uuuuuewf79cvkjxcnb,nbxcbnxcvzcxzxc78v7xcijhvjhixcvjhbnxcvhjxcvuvcxdsfjhsdfsdfjhisdjhisdhdsfsdfsddsfdssdf
 fdsfdsfdsfdsfdsdfdsfdsfds8787vcx978xc798vxcihjvihxcicxv7cx76hijkjsdf76dhsdfjipsdiuewruinldfdsfdsfdsfdsff
