@@ -22,12 +22,34 @@ const newMemPool = new memPool();
 
 app.use(bodyParser.json());
 
+//get by block height
 app.get("/block/:height", (req, res) => {
 	const height = req.params.height;
+	
 	newBlockChain.getBlock(height).then( block => {	
-		res.send(block);
+		//invoke decodeStory helper function
+		let data = decodeStory(block);
+		res.send(data);
 	}).catch(error => res.status(400).send(error));		
 });
+
+//Get by address
+app.get("/stars/address/:address", (req, res) => {
+	const address = req.params.address;	
+	newBlockChain.getBlockByAddress(address).then( block => {			
+		//put each block through the helper decodeStory function
+		const data = decodeStory(block)
+		res.send(data);
+	}).catch(error => res.status(400).send(error));	;			
+});
+
+//get by block hash
+app.get("/stars/hash/:hash", (req, res) => {
+	const hash = req.params.hash;
+	newBlockChain.getBlockByHash(hash).then( block => {
+	
+	}).catch(error => res.status(400).send(error));	
+});	
 
 app.post("/block", (req,res) => {
 	const { address, star } = req.body;
