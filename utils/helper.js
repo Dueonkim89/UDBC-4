@@ -34,7 +34,6 @@ function decodeStory(block) {
 	return block;
 }
 
-x.body.star.storyDecoded = hex2ascii(block.body.star.story));
 
 module.exports = {
 	isASCII,

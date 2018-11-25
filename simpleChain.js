@@ -52,6 +52,25 @@ class Blockchain{
 			return Promise.resolve(dataSet.length - 1);
 		}).catch(error => Promise.reject('Unable to obtain block height'));
     }
+	
+	//Get block by  wallet address
+	getBlockByAddress(address) {
+		return getLevelDB().then(dataSet => {
+		//filter dataset by hash argument and then map the array to get JSON parsed data
+		let filteredDataSet = dataSet.filter(x => JSON.parse(x).body.address === address).map(x => JSON.parse(x));
+		//if array is empty, it means hash doesnt exist
+		if (!filteredDataSet.length) {
+			return Promise.reject(`No blocks found for the address: ${address}`);
+		}
+		//send rejected promise
+		return Promise.resolve(filteredDataSet);		
+		});
+	}
+	
+	//Get block by hash
+	getBlockByHash(hash) {
+		
+	}
 
     // get block
     getBlock(blockHeight){
