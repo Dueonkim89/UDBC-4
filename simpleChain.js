@@ -53,25 +53,27 @@ class Blockchain{
 		}).catch(error => Promise.reject('Unable to obtain block height'));
     }
 	
-	//Get block by  wallet address
-	getBlockByAddress(address) {
+	//Get block by  wallet address or hash
+	getBlockByAddressOrHash(searchField, searchParam) {
 		return getLevelDB().then(dataSet => {
-		//filter dataset by hash argument and then map the array to get JSON parsed data
-		let filteredDataSet = dataSet.filter(x => JSON.parse(x).body.address === address).map(x => JSON.parse(x));
-		//if array is empty, it means hash doesnt exist
-		if (!filteredDataSet.length) {
-			return Promise.reject(`No blocks found for the address: ${address}`);
-		}
-		//send rejected promise
-		return Promise.resolve(filteredDataSet);		
+			let filteredDataSet = null;
+			if (searchField === 'address') {
+				//filter dataset by address argument and then map the array to get JSON parsed data
+				filteredDataSet = dataSet.filter(x => JSON.parse(x).body.address === searchParam).map(x => JSON.parse(x));	
+			} else if (searchField === 'hash') {
+				//filter dataset by hash argument and then map the array to get JSON parsed data
+				filteredDataSet = dataSet.filter(x => JSON.parse(x).hash === searchParam).map(x => JSON.parse(x));	
+			}
+
+			//if filteredDataSet is empty, it means result doesnt exist
+			if (!filteredDataSet.length) {
+				return Promise.reject(`No blocks found for the ${searchField}: ${searchParam}`);
+			}
+			//send promise
+			return Promise.resolve(filteredDataSet);		
 		});
 	}
 	
-	//Get block by hash
-	getBlockByHash(hash) {
-		
-	}
-
     // get block
     getBlock(blockHeight){
 		return getLevelDBData(blockHeight).then(block => {

@@ -37,7 +37,7 @@ class memPool {
 		if (timeLimit === 300000 && new Date().getTime() >= expirationTime) {
 			return this.createNewValidationRequest(request.address);
 		// else if 30 min window is over, set messageSig to false.
-		} else if (timeLimit === 360000 && new Date().getTime() >= expirationTime) {
+		} else if (timeLimit === 1800000 && new Date().getTime() >= expirationTime) {
 			request.messageSignature = false;
 			return request;
 		// else create new 	validationWindow	
@@ -120,7 +120,6 @@ class memPool {
 		if (request) {
 			this.validMemPool.push(request);
 		}	
-		console.log(this.validMemPool);
 	}
 	
 	//method to mutate MemPool and update with most recent request object
@@ -129,7 +128,6 @@ class memPool {
 		this.memPool = this.memPool.filter(request => request.address !== address);
 		//filter and push new object.
 		this.memPool.push(request);	
-		console.log(this.memPool);
 	}
 
 	//method to get the specific request from validMemPool with new time.
@@ -138,7 +136,7 @@ class memPool {
 		let currentRequest = this.validMemPool.filter(request => request.status.address === address);
 		// destruct status and registerStar then invoke calculateNewValidationWindow(request, timeLimit)
 		const { status, registerStar } = currentRequest[0];
-		const updatedStatus = this.calculateNewValidationWindow(status, 360000);		
+		const updatedStatus = this.calculateNewValidationWindow(status, 1800000);		
 		return {registerStar, status: updatedStatus};
 	}
 	
