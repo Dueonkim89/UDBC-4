@@ -22,7 +22,15 @@ class Blockchain{
   
   //create genesis block
   createGenesisBlock() {
-	this.addBlock(new Block("First block in the chain - Genesis block"));  
+	let firstBlock = {
+		address: "First block in the chain - Genesis block",
+		star: {
+			dec: '+6° 20′ 59',
+			ra: '05h 25m 8s',
+			story: Buffer.from("First star in the block. Bellatrix!").toString('hex')
+		}
+	}; 
+	this.addBlock(new Block(firstBlock));  
   }
   
   // Add new block
