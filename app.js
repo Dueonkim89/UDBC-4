@@ -23,9 +23,9 @@ const newMemPool = new memPool();
 app.use(bodyParser.json());
 
 //get block by block height
-app.get("/block/height", (req, res) => {
+app.get("/block/:height", (req, res) => {
 	const height = req.params.height;
-	
+	console.log(height);
 	newBlockChain.getBlock(height).then( block => {	
 		//invoke decodeStory helper function
 		let data = decodeStory(block);
@@ -104,8 +104,9 @@ app.post("/block", (req,res) => {
 	};
 	//add block
 	newBlockChain.addBlock(new Block(body)).then(block => {
-		//make sure to prevent star from being posted again within 30 min window.		
-		newMemPool.starPosted(address);
+		//make sure to remove request from memPool& vMemPool
+		newMemPool.updateVMemPool(address);
+		newMemPool.updateMemPool(address);
 		//invoke helper function to add storyDecoded property.
 		let data = decodeStory(block);		
 		res.send(data);		

@@ -84,7 +84,7 @@ class memPool {
 		} else {
 			const requestInfo = this.checkValidation(addy, 'validated');
 			const {address, requestTimeStamp, message, validationWindow} = requestInfo;	
-			const newValWindow = 360 - (300 - validationWindow);
+			const newValWindow = 1800 - (300 - validationWindow);
 			let response =  {
 			  "registerStar": true,
 			  "status": {
@@ -127,7 +127,9 @@ class memPool {
 		//remove request within mempool that has the address
 		this.memPool = this.memPool.filter(request => request.address !== address);
 		//filter and push new object.
-		this.memPool.push(request);	
+		if (request) {
+			this.memPool.push(request);	
+		}		
 	}
 
 	//method to get the specific request from validMemPool with new time.
@@ -145,13 +147,13 @@ class memPool {
 		return this.memPool.filter(request => request.address === address);
 	}
 	
+	/*
 	//prevent multiple star posting within 30 mins
 	starPosted(address) {
 		const request = this.getRequestFromVMemPool(address);
 		request.registerStar = false;
 		this.updateVMemPool(address, request);
-	}
-	
+	}*/	
 }
 
 module.exports = {
